@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal" android:layout_width="match_parent"
+    android:paddingTop="@dimen/list_vertical_margin"
+    android:paddingBottom="@dimen/list_vertical_margin"
+    android:paddingLeft="@dimen/list_horizontal_margin"
+    android:paddingRight="@dimen/list_horizontal_margin"
+    android:layout_height="wrap_content">
+
+    <!--android:paddingLeft="@dimen/list_horizontal_margin"-->
+    <!--android:paddingRight="@dimen/list_horizontal_margin"-->
+    <!--android:paddingTop="@dimen/list_vertical_margin"-->
+    <!--android:paddingBottom="@dimen/list_vertical_margin"-->
+
+    <TextView
+        android:gravity="center"
+        android:minWidth="82dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/tv_tagid"
+        android:textSize="48sp"
+        android:layout_gravity="center_vertical"
+        android:layout_marginRight="@dimen/list_horizontal_margin"
+        android:text="123"/>
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:id="@+id/tv_address_short"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="14sp"
+            android:layout_marginBottom="@dimen/list_short_margin"
+            android:text="중랑구 면목3.8동"/>
+
+        <TextView
+            android:id="@+id/tv_address_full"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:text="서울시 중랑구 사가정로41길59"
+            android:layout_marginBottom="@dimen/list_short_margin"/>
+
+        <TextView
+            android:id="@+id/tv_inst"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="16sp"
+            android:text="소파상상어린이공원 놀이터(조합1,그네1,흔들2,바닥재(포설,모래)만검사)"/>
+
+
+
+        </LinearLayout>
+
+
+
+</LinearLayout>

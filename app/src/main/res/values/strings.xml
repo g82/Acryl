@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Acryl</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+
+    <string name="daum_maps_api_key">7f74df07a56822fc37f9cb17a8b1fe4a6bee7d3b</string>
+    <string name="daum_local_api_key">59f132482a2de8e3e09659af2914f094a83fc9a5</string>
+
+</resources>
