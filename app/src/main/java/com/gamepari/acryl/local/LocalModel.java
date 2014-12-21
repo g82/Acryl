@@ -1,22 +1,22 @@
 package com.gamepari.acryl.local;
 
-import net.daum.android.map.coord.MapCoordLatLng;
-
 /**
  * Created by gamepari on 12/21/14.
  */
 public class LocalModel {
 
-    public LocalModel(double lat, double lng, String title) {
+    int tagId;
+    double lat;
+    double lng;
+    String title;
+
+    public LocalModel(double lat, double lng, String title, int tagId) {
 
         this.lat = lat;
         this.lng = lng;
         this.title = title;
+        this.tagId = tagId;
     }
-
-    double lat;
-    double lng;
-    String title;
 
     public double getLat() {
         return lat;
@@ -28,5 +28,9 @@ public class LocalModel {
 
     public String getTitle() {
         return title;
+    }
+
+    public int getTagId() {
+        return tagId;
     }
 }

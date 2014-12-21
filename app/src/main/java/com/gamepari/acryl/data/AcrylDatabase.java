@@ -8,9 +8,6 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.os.Environment;
 import android.util.Log;
 
-import com.gamepari.acryl.MainActivity;
-
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -19,6 +16,12 @@ import java.util.List;
  * Created by gamepari on 12/21/14.
  */
 public class AcrylDatabase extends SQLiteOpenHelper {
+
+    //modify this path.
+    public static final String TSV_FILE_PATH = "we love acryl/test.tsv";
+    public static final String DB_NAME = "acryl.db";
+
+    private static final String TABLE_NAME = "tb_acryl";
 
     private String TAG = this.getClass().getSimpleName();
 
@@ -29,7 +32,7 @@ public class AcrylDatabase extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase sqLiteDatabase) {
 
-        //중랑구,53,2419,서울시 중랑구 면목2동 124-15,면목2동,열매상상어린이공원 놀이터,"₩5,000"
+        //sample : 중랑구,53,2419,서울시 중랑구 면목2동 124-15,면목2동,열매상상어린이공원 놀이터,"₩5,000"
 
         String sqlQuery = "CREATE TABLE tb_acryl (" +
                 "_id INTEGER PRIMARY KEY AUTOINCREMENT," +
@@ -45,9 +48,9 @@ public class AcrylDatabase extends SQLiteOpenHelper {
 
         sqLiteDatabase.execSQL(sqlQuery);
 
-        List<Playground> listResult = null;
+        List<PlaygroundModel> listResult = null;
 
-        TSVReader tsvReader = new TSVReader(Environment.getExternalStorageDirectory().getPath() + "/" + MainActivity.TSV_FILE_PATH);
+        TSVReader tsvReader = new TSVReader(Environment.getExternalStorageDirectory().getPath() + "/" + TSV_FILE_PATH);
 
         try {
             listResult = tsvReader.runParse();
@@ -58,7 +61,7 @@ public class AcrylDatabase extends SQLiteOpenHelper {
 
         if (listResult != null && listResult.size() > 0) {
 
-            for (Playground pObject : listResult) {
+            for (PlaygroundModel pObject : listResult) {
 
                 ContentValues values = new ContentValues();
                 values.put("tag_id", pObject.getTag_num());
@@ -70,26 +73,26 @@ public class AcrylDatabase extends SQLiteOpenHelper {
                 values.put("pay", pObject.getPay());
                 values.put("checked", 0);
 
-                sqLiteDatabase.insertOrThrow("tb_acryl", null, values);
+                sqLiteDatabase.insertOrThrow(TABLE_NAME, null, values);
             }
         }
-
     }
 
-    public List<Playground> getListPlayGround() {
 
-        List<Playground> listPlayground = new ArrayList<>();
+    public List<PlaygroundModel> getListPlayGround() {
+
+        List<PlaygroundModel> listPlaygroundModel = new ArrayList<>();
 
         SQLiteDatabase sqLiteDatabase = getReadableDatabase();
 
-        Cursor cursor = sqLiteDatabase.query("tb_acryl", null, null,null,null,null,null);
+        Cursor cursor = sqLiteDatabase.query("tb_acryl", null, null, null, null, null, null);
 
-        Playground pObject = null;
+        PlaygroundModel pObject = null;
 
         while (cursor.moveToNext()) {
 
-            pObject = new Playground();
-            listPlayground.add(pObject);
+            pObject = new PlaygroundModel();
+            listPlaygroundModel.add(pObject);
 
             pObject.setTag_num(cursor.getInt(1));
             pObject.setInst_num(cursor.getInt(2));
@@ -103,7 +106,7 @@ public class AcrylDatabase extends SQLiteOpenHelper {
 
         sqLiteDatabase.close();
 
-        return listPlayground;
+        return listPlaygroundModel;
 
     }
 
@@ -114,4 +117,18 @@ public class AcrylDatabase extends SQLiteOpenHelper {
     }
 
 
+    public boolean updatePlayGround(PlaygroundModel pObject) {
+        SQLiteDatabase database = getWritableDatabase();
+
+        ContentValues values = new ContentValues();
+        values.put("tag_id", pObject.getTag_num());
+        values.put("checked", (pObject.isChecked()) ? 1 : 0);
+
+        int affectedRows = database.update(TABLE_NAME, values,
+                "tag_id = ?", new String[]{String.valueOf(pObject.getTag_num())});
+
+        database.close();
+
+        return (affectedRows == 1) ? true : false;
+    }
 }

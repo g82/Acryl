@@ -1,9 +1,11 @@
 package com.gamepari.acryl.data;
 
+import com.gamepari.acryl.local.LocalModel;
+
 /**
  * Created by seokceed on 2014-12-20.
  */
-public class Playground {
+public class PlaygroundModel {
 
     private int tag_num;
     private int inst_num;
@@ -18,6 +20,16 @@ public class Playground {
     private String address2;
 
     private boolean isChecked;
+
+    private LocalModel localModel;
+
+    public LocalModel getLocalModel() {
+        return localModel;
+    }
+
+    public void setLocalModel(LocalModel localModel) {
+        this.localModel = localModel;
+    }
 
     public int getTag_num() {
         return tag_num;
