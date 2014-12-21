@@ -229,7 +229,7 @@ public class MainActivity extends Activity implements
     public void onPOIItemSelected(MapView mapView, MapPOIItem mapPOIItem) {
         PlaygroundModel pObject = (PlaygroundModel) mapPOIItem.getUserObject();
         int index = ((PlayGroundAdapter) listView.getAdapter()).getPosition(pObject);
-        listView.smoothScrollToPosition(index);
+        listView.smoothScrollToPositionFromTop(index, 0);
     }
 
     @Override
@@ -361,15 +361,19 @@ public class MainActivity extends Activity implements
 
             super.onPostExecute(pObject);
 
-            LocalModel o = pObject.getLocalModel();
+            if (pObject != null && pObject.getLocalModel() != null) {
 
-            if (o != null) {
+                LocalModel o = pObject.getLocalModel();
 
                 mapView.setMapCenterPointAndZoomLevel(MapPoint.mapPointWithGeoCoord(o.getLat(), o.getLng()), 0, true);
                 MapPOIItem marker = new MapPOIItem();
                 marker.setItemName(o.getTagId() + " / " + o.getTitle());
                 marker.setMapPoint(MapPoint.mapPointWithGeoCoord(o.getLat(), o.getLng()));
-                marker.setMarkerType(MapPOIItem.MarkerType.RedPin); // 기본으로 제공하는 BluePin 마커 모양.
+                marker.setMarkerType(MapPOIItem.MarkerType.CustomImage);
+                marker.setCustomImageResourceId(R.drawable.red_pin_big);
+                marker.setCustomImageAutoscale(true);
+                marker.setShowAnimationType(MapPOIItem.ShowAnimationType.DropFromHeaven);
+                marker.setShowDisclosureButtonOnCalloutBalloon(false);
 
                 marker.setUserObject(pObject);
 
