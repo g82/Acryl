@@ -49,6 +49,8 @@ public class TSVReader {
             pgObject.setPay(columns[6]);
         }
 
+        fis.close();
+
 
         //중랑구,53,2419,서울시 중랑구 면목2동 124-15,면목2동,열매상상어린이공원 놀이터,"₩5,000"
 
