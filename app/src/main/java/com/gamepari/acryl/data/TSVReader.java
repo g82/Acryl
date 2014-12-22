@@ -27,12 +27,8 @@ public class TSVReader {
 
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(new BufferedInputStream(fis, 1024)));
 
-        StringBuilder stringBuilder = new StringBuilder();
-
         String line;
-        List<String> lines = new ArrayList<>();
-
-        PlaygroundModel pgObject = null;
+        PlaygroundModel pgObject;
         List<PlaygroundModel> listPlaygroundModel = new ArrayList<>();
 
         while ((line = bufferedReader.readLine()) != null) {
