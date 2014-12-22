@@ -8,6 +8,8 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.os.Environment;
 import android.util.Log;
 
+import com.gamepari.acryl.local.LocalModel;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -43,7 +45,9 @@ public class AcrylDatabase extends SQLiteOpenHelper {
                 "address_full TEXT," +
                 "inst_name TEXT," +
                 "pay TEXT," +
-                "checked TEXT" +
+                "checked TEXT," +
+                "lat REAL," +
+                "lng REAL" +
                 ");";
 
         sqLiteDatabase.execSQL(sqlQuery);
@@ -72,6 +76,8 @@ public class AcrylDatabase extends SQLiteOpenHelper {
                 values.put("address2", pObject.getAddress2());
                 values.put("pay", pObject.getPay());
                 values.put("checked", 0);
+                values.put("lat", 0.0);
+                values.put("lng", 0.0);
 
                 sqLiteDatabase.insertOrThrow(TABLE_NAME, null, values);
             }
@@ -92,6 +98,7 @@ public class AcrylDatabase extends SQLiteOpenHelper {
         while (cursor.moveToNext()) {
 
             pObject = new PlaygroundModel();
+
             listPlaygroundModel.add(pObject);
 
             pObject.setTag_num(cursor.getInt(1));
@@ -102,6 +109,8 @@ public class AcrylDatabase extends SQLiteOpenHelper {
             pObject.setInstName(cursor.getString(6));
             pObject.setPay(cursor.getString(7));
             pObject.setChecked(cursor.getInt(8));
+            pObject.setLocalModel(new LocalModel(cursor.getDouble(9), cursor.getDouble(10), pObject.getInstName(), pObject.getTag_num()));
+
         }
 
         sqLiteDatabase.close();
@@ -123,6 +132,13 @@ public class AcrylDatabase extends SQLiteOpenHelper {
         ContentValues values = new ContentValues();
         values.put("tag_id", pObject.getTag_num());
         values.put("checked", (pObject.isChecked()) ? 1 : 0);
+
+        LocalModel o = pObject.getLocalModel();
+
+        if (o != null) {
+            values.put("lat", o.getLat());
+            values.put("lng", o.getLng());
+        }
 
         int affectedRows = database.update(TABLE_NAME, values,
                 "tag_id = ?", new String[]{String.valueOf(pObject.getTag_num())});

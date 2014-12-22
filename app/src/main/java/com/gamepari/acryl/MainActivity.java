@@ -15,6 +15,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -48,6 +49,8 @@ public class MainActivity extends Activity implements
     private HashMap<Integer, MapPOIItem> markerHashMap;
     private AcrylDatabase acrylDatabase;
 
+    private PlayGroundAdapter adapter;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -70,7 +73,9 @@ public class MainActivity extends Activity implements
         listView.setOnItemClickListener(this);
         listView.setOnItemLongClickListener(this);
 
-        findViewById(R.id.btn_refresh).setOnClickListener(this);
+        findViewById(R.id.btn_view_all).setOnClickListener(this);
+        findViewById(R.id.btn_view_done).setOnClickListener(this);
+        findViewById(R.id.btn_view_yet).setOnClickListener(this);
 
         // check location settings on
         LocationManager manager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
@@ -78,6 +83,7 @@ public class MainActivity extends Activity implements
         if (!manager.isProviderEnabled(LocationManager.GPS_PROVIDER) && !manager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
             // when gps disabled
             showDialogTurnOnGPS();
+
         }
 
         new ReadDatabaseTask().execute(AcrylDatabase.DB_NAME);
@@ -87,6 +93,29 @@ public class MainActivity extends Activity implements
         mapView.setCurrentLocationTrackingMode(MapView.CurrentLocationTrackingMode.TrackingModeOnWithoutHeading);
         mapView.setCurrentLocationEventListener(this);
     }
+
+    private void showAllPins(List<PlaygroundModel> playgroundModels) {
+        for (PlaygroundModel pObject : playgroundModels) {
+
+            LocalModel o = pObject.getLocalModel();
+
+            if (!pObject.isChecked() && o != null && o.getLat() != 0.0) {
+
+                MapPOIItem marker = new MapPOIItem();
+                marker.setItemName(o.getTagId() + " / " + o.getTitle());
+                marker.setMapPoint(MapPoint.mapPointWithGeoCoord(o.getLat(), o.getLng()));
+                marker.setMarkerType(MapPOIItem.MarkerType.CustomImage);
+                marker.setCustomImageResourceId(R.drawable.red_pin_big);
+                marker.setCustomImageAutoscale(true);
+                marker.setShowDisclosureButtonOnCalloutBalloon(false);
+                marker.setUserObject(pObject);
+                markerHashMap.put(o.getTagId(), marker);
+                mapView.addPOIItem(marker);
+            } else continue;
+
+        }
+    }
+
 
     private void showDialogTurnOnGPS() {
 
@@ -110,12 +139,24 @@ public class MainActivity extends Activity implements
             case R.id.btn_refresh:
                 turnOnTrackingMode(mapView);
                 break;
+
+            case R.id.btn_view_all:
+                adapter.setViewMode(PlayGroundAdapter.VIEW_ALL);
+                break;
+
+            case R.id.btn_view_done:
+                adapter.setViewMode(PlayGroundAdapter.VIEW_ONLY_DONE);
+                break;
+
+            case R.id.btn_view_yet:
+                adapter.setViewMode(PlayGroundAdapter.VIEW_ONLY_YET);
+                break;
         }
     }
 
     @Override
     public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-        PlaygroundModel pObject = (PlaygroundModel) adapterView.getAdapter().getItem(i);
+        PlaygroundModel pObject = adapter.getItem(i);
 
         if (pObject.isChecked()) return;
 
@@ -130,7 +171,7 @@ public class MainActivity extends Activity implements
     @Override
     public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l) {
 
-        PlaygroundModel pObject = (PlaygroundModel) adapterView.getAdapter().getItem(i);
+        PlaygroundModel pObject = adapter.getItem(i);
 
         if (pObject.isChecked()) {
 
@@ -228,7 +269,7 @@ public class MainActivity extends Activity implements
     @Override
     public void onPOIItemSelected(MapView mapView, MapPOIItem mapPOIItem) {
         PlaygroundModel pObject = (PlaygroundModel) mapPOIItem.getUserObject();
-        int index = ((PlayGroundAdapter) listView.getAdapter()).getPosition(pObject);
+        int index = adapter.getPosition(pObject);
         listView.smoothScrollToPositionFromTop(index, 0);
     }
 
@@ -249,17 +290,25 @@ public class MainActivity extends Activity implements
 
     private class PlayGroundAdapter extends BaseAdapter {
 
+        public static final int VIEW_ALL = 0;
+        public static final int VIEW_ONLY_DONE = 1;
+        public static final int VIEW_ONLY_YET = 2;
         private List<PlaygroundModel> playgroundModelList;
+        private int viewMode;
 
-        private PlayGroundAdapter(List<PlaygroundModel> playgroundModels) {
+        public PlayGroundAdapter(List<PlaygroundModel> playgroundModels, int viewMode) {
             this.playgroundModelList = playgroundModels;
+            this.viewMode = viewMode;
         }
 
         public int getPosition(PlaygroundModel playgroundModel) {
-
             int index = playgroundModelList.indexOf(playgroundModel);
-
             return index;
+        }
+
+        public void setViewMode(int viewMode) {
+            this.viewMode = viewMode;
+            notifyDataSetChanged();
         }
 
         @Override
@@ -285,6 +334,7 @@ public class MainActivity extends Activity implements
             if (view == null) {
                 view = View.inflate(MainActivity.this, R.layout.cell_playground, null);
                 holder = new ViewHolder();
+                holder.llContainer = (LinearLayout) view.findViewById(R.id.ll_container);
                 holder.tvTag = (TextView) view.findViewById(R.id.tv_tagid);
                 holder.tvShortAddr = (TextView) view.findViewById(R.id.tv_address_short);
                 holder.tvFullAddr = (TextView) view.findViewById(R.id.tv_address_full);
@@ -296,22 +346,59 @@ public class MainActivity extends Activity implements
 
             PlaygroundModel pObject = getItem(i);
 
-            if (pObject.isChecked()) {
-                view.setBackgroundColor(Color.rgb(228, 93, 79));
-            } else {
-                view.setBackgroundColor(Color.TRANSPARENT);
-            }
+            switch (viewMode) {
+                case VIEW_ALL:
+                    if (pObject.isChecked()) {
+                        holder.llContainer.setVisibility(View.VISIBLE);
+                        holder.llContainer.setBackgroundColor(Color.rgb(228, 93, 79));
+                    } else {
+                        holder.llContainer.setVisibility(View.VISIBLE);
+                        holder.llContainer.setBackgroundColor(Color.TRANSPARENT);
+                    }
 
-            holder.tvTag.setText(String.valueOf(pObject.getTag_num()));
-            holder.tvShortAddr.setText(pObject.getAddress1() + " / " + pObject.getAddress2());
-            holder.tvFullAddr.setText(pObject.getFullAddress());
-            holder.tvInstName.setText(pObject.getInstName());
+                    holder.tvTag.setText(String.valueOf(pObject.getTag_num()));
+                    holder.tvShortAddr.setText(pObject.getAddress1() + " / " + pObject.getAddress2());
+                    holder.tvFullAddr.setText(pObject.getFullAddress());
+                    holder.tvInstName.setText(pObject.getInstName());
+                    break;
+
+                case VIEW_ONLY_DONE:
+
+                    if (pObject.isChecked()) {
+                        holder.llContainer.setVisibility(View.VISIBLE);
+                        holder.llContainer.setBackgroundColor(Color.rgb(228, 93, 79));
+                        holder.tvTag.setText(String.valueOf(pObject.getTag_num()));
+                        holder.tvShortAddr.setText(pObject.getAddress1() + " / " + pObject.getAddress2());
+                        holder.tvFullAddr.setText(pObject.getFullAddress());
+                        holder.tvInstName.setText(pObject.getInstName());
+                    } else {
+                        holder.llContainer.setVisibility(View.GONE);
+                    }
+
+                    break;
+
+                case VIEW_ONLY_YET:
+
+                    if (pObject.isChecked()) {
+                        holder.llContainer.setVisibility(View.GONE);
+                    } else {
+                        holder.llContainer.setVisibility(View.VISIBLE);
+                        holder.llContainer.setBackgroundColor(Color.TRANSPARENT);
+                        holder.tvTag.setText(String.valueOf(pObject.getTag_num()));
+                        holder.tvShortAddr.setText(pObject.getAddress1() + " / " + pObject.getAddress2());
+                        holder.tvFullAddr.setText(pObject.getFullAddress());
+                        holder.tvInstName.setText(pObject.getInstName());
+                    }
+
+                    break;
+            }
 
             return view;
         }
 
         private class ViewHolder {
             public TextView tvTag, tvShortAddr, tvFullAddr, tvInstName;
+            public LinearLayout llContainer;
         }
 
     }
@@ -333,7 +420,16 @@ public class MainActivity extends Activity implements
 
                 int status = channel.getInt("result");
 
-                if (status == 1) {
+                if (status >= 1) {
+
+                    if (status != 1) {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Toast.makeText(MainActivity.this, "부정확할수있음", Toast.LENGTH_LONG).show();
+                            }
+                        });
+                    }
 
                     JSONArray item = jsonObject.getJSONObject("channel").getJSONArray("item");
                     JSONObject items = item.getJSONObject(0);
@@ -366,6 +462,7 @@ public class MainActivity extends Activity implements
                 LocalModel o = pObject.getLocalModel();
 
                 mapView.setMapCenterPointAndZoomLevel(MapPoint.mapPointWithGeoCoord(o.getLat(), o.getLng()), 0, true);
+
                 MapPOIItem marker = new MapPOIItem();
                 marker.setItemName(o.getTagId() + " / " + o.getTitle());
                 marker.setMapPoint(MapPoint.mapPointWithGeoCoord(o.getLat(), o.getLng()));
@@ -374,11 +471,12 @@ public class MainActivity extends Activity implements
                 marker.setCustomImageAutoscale(true);
                 marker.setShowAnimationType(MapPOIItem.ShowAnimationType.DropFromHeaven);
                 marker.setShowDisclosureButtonOnCalloutBalloon(false);
-
                 marker.setUserObject(pObject);
-
-                mapView.addPOIItem(marker);
                 markerHashMap.put(o.getTagId(), marker);
+                mapView.addPOIItem(marker);
+
+                new UpdateDataBaseTask().execute(pObject);
+
             } else {
                 Toast.makeText(MainActivity.this, "실패", Toast.LENGTH_LONG).show();
             }
@@ -400,7 +498,7 @@ public class MainActivity extends Activity implements
         protected void onPostExecute(Boolean aBoolean) {
             super.onPostExecute(aBoolean);
 
-            if (aBoolean) ((PlayGroundAdapter) listView.getAdapter()).notifyDataSetChanged();
+            if (aBoolean) adapter.notifyDataSetChanged();
         }
     }
 
@@ -425,8 +523,9 @@ public class MainActivity extends Activity implements
             super.onPostExecute(playgroundModels);
 
             if (playgroundModels != null) {
-                PlayGroundAdapter playGroundAdapter = new PlayGroundAdapter(playgroundModels);
-                listView.setAdapter(playGroundAdapter);
+                adapter = new PlayGroundAdapter(playgroundModels, PlayGroundAdapter.VIEW_ALL);
+                listView.setAdapter(adapter);
+                showAllPins(playgroundModels);
             }
 
         }
