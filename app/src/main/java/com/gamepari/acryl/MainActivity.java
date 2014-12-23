@@ -67,7 +67,7 @@ public class MainActivity extends Activity implements
         markerHashMap = new HashMap<>();
 
         FrameLayout fl_map = (FrameLayout) findViewById(R.id.fl_map);
-        fl_map.addView(mapView, -1);
+        fl_map.addView(mapView);
 
         listView = (ListView) findViewById(R.id.lv_list);
         listView.setOnItemClickListener(this);
@@ -76,6 +76,7 @@ public class MainActivity extends Activity implements
         findViewById(R.id.btn_view_all).setOnClickListener(this);
         findViewById(R.id.btn_view_done).setOnClickListener(this);
         findViewById(R.id.btn_view_yet).setOnClickListener(this);
+        findViewById(R.id.btn_refresh).setOnClickListener(this);
 
         // check location settings on
         LocationManager manager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
